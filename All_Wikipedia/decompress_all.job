@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH -N 2
+#SBATCH -p RM
+#SBATCH -t 06:00:00
+
+module load python/intel/2.7.12
+
+# move to working directory
+cd /pylon2/ac4s92p/tinabu/LanguageClassificationCC/Wikipedia_Downloader
+mkdir decompressed
+
+# run bash code to download everything
+for FILE in $(ls compressed) ; do
+    LANGUAGE=$(python obtain_language_from_file.py $FILE 1)
+    echo "Uncompressing compressed.bz2 file, $LANGUAGE language"
+    if [ -d "decompressed/$LANGUAGE" ]; then
+        continue
+    fi
+    bunzip2 -c -k "compressed/compressed.$LANGUAGE.bz2" > current.xml
+    python wikiextractor/WikiExtractor.py current.xml  -q -o "decompressed/$LANGUAGE"
+    rm current.xml
+done

@@ -1,0 +1,83 @@
+#!/bin/bash
+#***************************************************
+#this script reads from arguments variable $1 and $2 a list of urls. 
+#downloads each url, uncompresses. 
+#usage: download_common_crawl.sh [list_to_WARC urls] [list_to_WET_urls]
+#***************************************************
+
+initial=$(date +"%D"" at ""%T") #get timestamp when initiate algorithm
+
+
+wet_reviewed="wet_reviewed.txt" #txt file to list reviewed wet files
+warc_reviewed="warc_reviewed.txt" #txt file to list reviewed warc files
+
+#Review that file was not created before
+if [ -f "$wet_reviewed" ]; then
+    rm $wet_reviewed
+    rm $warc_reviewed
+fi
+touch $wet_reviewed
+touch $warc_reviewed
+
+echo "Current time : $now"
+echo "URLs provided by file: $1"
+echo "URLs provided by file: $2"
+echo "======================================="
+prefix="https://commoncrawl.s3.amazonaws.com/"
+wet_suffix=".wet.gz"
+warc_suffix=".warc.gz"
+echo "======================================="
+
+#iterate both WET and WARC file together        
+while read warc <&3 && read wet <&4 ; do
+    
+    #getting id to write filename
+    re="(.*)/(CC-MAIN-[^.]*)(.*)"
+    if [[ $wet =~ $re ]]; then 
+        name=${BASH_REMATCH[2]};
+    fi
+    
+    echo $name
+
+    echo "************************************************"
+    url_wet=$prefix$wet
+    wet_gz=$name$wet_suffix
+    
+    echo "DOWNLOADING"
+    echo "Input: $url_wet"
+    echo "Output: $wet_gz"
+    #wget $url_wet -O $wet_gz
+    echo "DECOMPRESSING $wet_gz"
+    echo "..."
+    #gunzip -k -f $wet_gz
+    
+    echo "************************************************"
+    url_warc=$prefix$warc
+    warc_gz=$name$warc_suffix
+    
+    echo "DOWNLOADING"
+    echo "Input: $url_warc"
+    echo "Output: $warc_gz"
+    #wget $url_warc -O $warc_gz
+    echo "DECOMPRESSING $warc_name"
+    echo "..."
+    #gunzip -k -f $warc_gz
+    
+    #HERE GOES THE PART WHERE ITERATE FILES AND DO CLASSIFICATION
+
+    
+    wet_name=$name".wet"
+    warc_name=$name".warc"
+
+    echo "$wet_name" >> $wet_reviewed
+    echo "$warc_name" >> $warc_reviewed
+
+    #
+    rm $wet_gz
+    rm $wet_name
+    rm $warc_gz
+    rm $warc_name
+done 3< "$1" 4< "$2"
+finish=$(date +"%D"" at ""%T")
+echo "I started on $initial and finished now on $finish"
+echo "I am done with the bucket, Bye bye"
