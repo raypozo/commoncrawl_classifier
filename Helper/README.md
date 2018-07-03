@@ -1,0 +1,1 @@
+In this folder there are several scripts that were useful during the development of this project, but are not important for the core of it. 
